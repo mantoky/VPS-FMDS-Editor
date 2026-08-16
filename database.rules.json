@@ -1,0 +1,56 @@
+{
+  "//": [
+    "VPS-FMDS-Editor — canal de sala FMDS ao vivo.",
+    "",
+    "MODELO DE ACESSO (leia antes de mudar):",
+    "  * Só trafega o INDICE do slide. Fotos e conteudo ficam no pacote FMDS local",
+    "    de cada site — nunca grave imagem aqui.",
+    "  * O no da sala e de leitura publica. Quem souber o roomId le tudo, inclusive",
+    "    o viewerToken. Portanto o ROOM ID e o segredo de acesso, nao o token.",
+    "    Por isso o cliente gera IDs de 10 caracteres (36^10) sem vies de modulo.",
+    "  * viewerToken permanece como verificacao de integridade (detecta link colado",
+    "    de outra sala), NAO como controle de acesso. Autorizacao real exigiria",
+    "    custom claims emitidos por servidor — ver REVISAO-CODIGO secao 2.1.",
+    "  * A escrita e do UID anonimo que criou a sala. Consequencia: o link de",
+    "    apresentador nao transfere o comando para outro dispositivo.",
+    "",
+    "MANUTENCAO: expiresAt e verificado no cliente. Agende uma limpeza dos nos",
+    "com expiresAt < now para o banco nao crescer sem teto."
+  ],
+  "rules": {
+    "fmdsLiveRooms": {
+      "$roomId": {
+        ".read": true,
+        ".write": "auth != null && (!data.exists() || data.child('presenterUid').val() === auth.uid)",
+        ".validate": "$roomId.matches(/^[A-Z0-9]{6,12}$/) && newData.hasChildren(['presenterUid', 'viewerToken', 'index', 'seq', 'updatedAt'])",
+        "presenterUid": {
+          ".validate": "newData.isString() && newData.val().length > 5 && newData.val().length < 200"
+        },
+        "viewerToken": {
+          ".validate": "newData.isString() && newData.val().length > 5 && newData.val().length < 80"
+        },
+        "index": {
+          ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() < 500"
+        },
+        "seq": {
+          ".validate": "newData.isNumber() && newData.val() >= 0"
+        },
+        "deckHash": {
+          ".validate": "newData.isString() && newData.val().length < 80"
+        },
+        "updatedAt": {
+          ".validate": "newData.isNumber()"
+        },
+        "expiresAt": {
+          ".validate": "newData.isNumber()"
+        },
+        "closed": {
+          ".validate": "newData.isBoolean()"
+        },
+        "$other": {
+          ".validate": false
+        }
+      }
+    }
+  }
+}

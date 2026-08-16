@@ -1,0 +1,10 @@
+backups/
+.git/
+*.log
+.DS_Store
+Thumbs.db
+.netlify/
+node_modules/
+server.pid
+_audit_test.mjs
+*.tmp.js

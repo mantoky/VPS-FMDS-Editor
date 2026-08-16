@@ -1,0 +1,44 @@
+# VPS-FMDS-Editor — Netlify
+#
+# Os cabeçalhos ficam em `_headers` (fonte única). Antes as regras de sw.js e
+# de functions estavam duplicadas aqui e lá; manter os dois em sincronia era
+# um convite a divergência silenciosa.
+
+[build]
+  publish = "."
+  command = "echo Static PWA — no build step"
+  functions = "netlify/functions"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+# Artefatos de execução local não devem ser servidos em produção.
+[[redirects]]
+  from = "/server.log"
+  to = "/index.html"
+  status = 404
+  force = true
+
+[[redirects]]
+  from = "/server.err.log"
+  to = "/index.html"
+  status = 404
+  force = true
+
+[[redirects]]
+  from = "/server.pid"
+  to = "/index.html"
+  status = 404
+  force = true
+
+[[redirects]]
+  from = "/backups/*"
+  to = "/index.html"
+  status = 404
+  force = true
+
+[[redirects]]
+  from = "/api/room"
+  to = "/.netlify/functions/room"
+  status = 200
+  force = true

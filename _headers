@@ -1,0 +1,56 @@
+# VPS-FMDS-Editor — cabeçalhos de resposta
+#
+# Regra geral: segurança em tudo; cache só onde o conteúdo é estável.
+# Antes, `no-store` valia para /* — incluindo default-background.png (1,4 MB) e o
+# vendor/ inteiro, revalidados a cada visita em rede de site remoto.
+#
+# CSP: 'unsafe-inline' em script-src é inevitável enquanto o app for um único
+# HTML com script inline. Ainda assim a política barra a exfiltração para
+# domínio externo (connect-src) e o carregamento de script de terceiro não
+# listado, que é a metade que importa para o vetor do pacote FMDS.
+# blob:/data: em img/frame/child/worker são exigidos por html2canvas e jsPDF —
+# não remova sem testar Exportar → PNG 16:9, PDF 16:9 e PDF do deck.
+
+/*
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: no-referrer
+  Permissions-Policy: geolocation=(), microphone=(), camera=(), payment=(), usb=()
+  Cross-Origin-Opener-Policy: same-origin
+  Content-Security-Policy: default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://*.firebaseio.com https://*.googleapis.com https://*.google.com wss://*.firebaseio.com; frame-src 'self' blob: data:; child-src 'self' blob: data:; worker-src 'self' blob:; manifest-src 'self'
+
+# ── Documento e shell do PWA: sempre revalidar ─────────────────────────────
+/
+  Cache-Control: no-cache, no-store, must-revalidate
+
+/index.html
+  Cache-Control: no-cache, no-store, must-revalidate
+
+/sw.js
+  Cache-Control: no-cache, no-store, must-revalidate
+  Service-Worker-Allowed: /
+
+/manifest.webmanifest
+  Cache-Control: no-cache, no-store, must-revalidate
+  Content-Type: application/manifest+json
+
+# firebase-config.js muda fora do ciclo de release — nunca servir do cache HTTP
+/firebase-config.js
+  Cache-Control: no-cache, no-store, must-revalidate
+
+# ── Estáticos estáveis: cache longo (o SW já versiona por CACHE_NAME) ──────
+/vendor/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/icons/*
+  Cache-Control: public, max-age=604800
+
+/*.png
+  Cache-Control: public, max-age=604800
+
+/*.svg
+  Cache-Control: public, max-age=604800
+
+# ── Funções: nunca cachear ────────────────────────────────────────────────
+/.netlify/functions/*
+  Cache-Control: no-store

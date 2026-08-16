@@ -1,0 +1,18 @@
+---
+description: Não quebrar Baixar/PDF/PNG do VPS-FMDS-Editor (invariantes de exportação)
+globs:
+  - index.html
+  - sw.js
+  - vendor/**
+alwaysApply: false
+---
+
+# Exportação VPS-FMDS — cuidado
+
+Ao editar captura/exportação, siga o skill `vps-fmds-export`:
+
+- Ícones: assar no próprio `<img>`, px explícitos — nunca `width/height: 100%` nem caixa do pai flex
+- Quadro fotográfico: **sem** fundo `#101c1a` / fill no bake (`resolveExportFillColor` = null)
+- `normalizeCanvasToSlide`: origem = `sourceCanvas.width/height` (nunca target como crop)
+- Motor único para todas as bandeiras — regressão afeta todos os ambientes
+- Se Baixar está bom, não refatore o bake “por limpeza”
