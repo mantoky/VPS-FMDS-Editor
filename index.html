@@ -549,6 +549,10 @@
     .corporate-flag[data-brand="vps"] .corporate-flag-mark { background: linear-gradient(180deg, #006149, #004736); }
     .corporate-flag[data-brand="vale"] .corporate-flag-mark { background: linear-gradient(180deg, #f0c419, #c9a00e); color: #1a1a1a; }
     .corporate-flag[data-brand="sonda"] .corporate-flag-mark { background: linear-gradient(180deg, #2f6fb5, #1e4f86); }
+    .corporate-flag[data-brand="sonda-cabling"] .corporate-flag-mark { background: linear-gradient(180deg, #3a7fc9, #245a97); }
+    .corporate-flag[data-brand="sonda-network"] .corporate-flag-mark { background: linear-gradient(180deg, #2560a0, #163c69); }
+    .corporate-flag[data-brand="sonda-lte-norte"] .corporate-flag-mark { background: linear-gradient(180deg, #4a8fd6, #2c6bab); }
+    .corporate-flag[data-brand="sonda-lte-sul"] .corporate-flag-mark { background: linear-gradient(180deg, #1f4d7f, #12335a); }
     .corporate-flag[data-brand="setfanini"] .corporate-flag-mark { background: linear-gradient(180deg, #c45c26, #8f3d14); }
     .corporate-flag[data-brand="aldak"] .corporate-flag-mark { background: linear-gradient(180deg, #5b6b7a, #3d4854); }
     .corporate-flag[data-brand="engefame"] .corporate-flag-mark { background: linear-gradient(180deg, #2f8f6b, #1f6a4e); }
@@ -2205,9 +2209,25 @@
             <span class="corporate-flag-mark" aria-hidden="true">VA</span>
             VALE
           </button>
-          <button type="button" class="corporate-flag" data-brand="sonda" role="menuitem" title="Bandeira SONDA">
-            <span class="corporate-flag-mark" aria-hidden="true">SO</span>
-            SONDA
+          <button type="button" class="corporate-flag" data-brand="sonda" role="menuitem" title="Bandeira SONDA D. CENTER">
+            <span class="corporate-flag-mark" aria-hidden="true">DC</span>
+            SONDA D. CENTER
+          </button>
+          <button type="button" class="corporate-flag" data-brand="sonda-cabling" role="menuitem" title="Bandeira SONDA CABLING">
+            <span class="corporate-flag-mark" aria-hidden="true">CB</span>
+            SONDA CABLING
+          </button>
+          <button type="button" class="corporate-flag" data-brand="sonda-network" role="menuitem" title="Bandeira SONDA NETWORK">
+            <span class="corporate-flag-mark" aria-hidden="true">NW</span>
+            SONDA NETWORK
+          </button>
+          <button type="button" class="corporate-flag" data-brand="sonda-lte-norte" role="menuitem" title="Bandeira SONDA LTE S. NORTE">
+            <span class="corporate-flag-mark" aria-hidden="true">LN</span>
+            SONDA LTE S. NORTE
+          </button>
+          <button type="button" class="corporate-flag" data-brand="sonda-lte-sul" role="menuitem" title="Bandeira SONDA LTE S. SUL">
+            <span class="corporate-flag-mark" aria-hidden="true">LS</span>
+            SONDA LTE S. SUL
           </button>
           <button type="button" class="corporate-flag" data-brand="setfanini" role="menuitem" title="Bandeira SETFANINI">
             <span class="corporate-flag-mark" aria-hidden="true">SF</span>
@@ -2791,7 +2811,7 @@
      */
     const EXPORT_DECK_FORMAT = "png";
     const EXPORT_DECK_JPEG_QUALITY = 0.95;
-    const APP_VERSION = "2026.08.16-v56-code-audit";
+    const APP_VERSION = "2026.08.16-v57-sonda-sub-brands";
     /** Congela layout/abas/guias do source como padrão visual desta release. Semana/data permanecem automáticas. */
     const BASELINE_FLAG = "vps-operacional-baseline-version";
     /** Bandeira canônica do modelo padrão compartilhado (Ambiente VALE). */
@@ -2807,11 +2827,28 @@
     const corporateBrands = {
       vps: "VPS",
       vale: "VALE",
-      sonda: "SONDA",
+      sonda: "SONDA D. CENTER",
+      "sonda-cabling": "SONDA CABLING",
+      "sonda-network": "SONDA NETWORK",
+      "sonda-lte-norte": "SONDA LTE S. NORTE",
+      "sonda-lte-sul": "SONDA LTE S. SUL",
       setfanini: "SETFANINI",
       aldak: "ALDAK",
       engefame: "ENGEFAME",
       "minas-laser": "MINAS LASER"
+    };
+    /**
+     * Sub-bandeiras que herdam o ambiente inicial de outra bandeira específica
+     * (em vez do template padrão ENVIRONMENT_TEMPLATE_BRAND). A Sonda tem
+     * ramificações de contrato/função (D. Center, Cabling, Network, LTE Norte/Sul)
+     * que devem começar com o mesmo ponto de partida (logo, layout, textos) já
+     * configurado em "sonda", não com o baseline genérico da Vale.
+     */
+    const BRAND_TEMPLATE_OVERRIDES = {
+      "sonda-cabling": "sonda",
+      "sonda-network": "sonda",
+      "sonda-lte-norte": "sonda",
+      "sonda-lte-sul": "sonda"
     };
     let activeCorporateBrand = localStorage.getItem(CORPORATE_BRAND_KEY) || "vps";
     if (!Object.prototype.hasOwnProperty.call(corporateBrands, activeCorporateBrand)) {
@@ -4307,13 +4344,23 @@
     function ensureSourceBaseline() {
       if (localStorage.getItem(BASELINE_FLAG) === APP_VERSION) return;
       const fallbackVisual = baselineVisualState();
-      const templateBrand = Object.prototype.hasOwnProperty.call(corporateBrands, ENVIRONMENT_TEMPLATE_BRAND)
+      const defaultTemplateBrand = Object.prototype.hasOwnProperty.call(corporateBrands, ENVIRONMENT_TEMPLATE_BRAND)
         ? ENVIRONMENT_TEMPLATE_BRAND
         : "vale";
-      const templateShared = readJsonStorage(sharedAssetsStorageKey(templateBrand));
       const forceResync = FORCE_TEMPLATE_RESYNC_ON_BASELINE === true;
+      // Cache por bandeira-template: evita reler o mesmo shared assets várias vezes
+      // quando mais de uma bandeira aponta para o mesmo template (ex.: as sub-bandeiras da Sonda).
+      const templateSharedCache = {};
+      const readTemplateShared = (brand) => {
+        if (!(brand in templateSharedCache)) {
+          templateSharedCache[brand] = readJsonStorage(sharedAssetsStorageKey(brand));
+        }
+        return templateSharedCache[brand];
+      };
 
       Object.keys(corporateBrands).forEach((brand) => {
+        const templateBrand = BRAND_TEMPLATE_OVERRIDES[brand] || defaultTemplateBrand;
+        const templateShared = readTemplateShared(templateBrand);
         if (templateShared && brand !== templateBrand) {
           const sharedKey = sharedAssetsStorageKey(brand);
           const existingShared = readJsonStorage(sharedKey);

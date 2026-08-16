@@ -1,5 +1,26 @@
 # Changelog — julho de 2026
 
+## `2026.08.16-v57-sonda-sub-brands`
+
+- **Espaço Corporativo:** a bandeira SONDA vira 5 sub-bandeiras isoladas —
+  SONDA D. CENTER, SONDA CABLING, SONDA NETWORK, SONDA LTE S. NORTE, SONDA LTE S. SUL
+  (`data-brand`: `sonda`, `sonda-cabling`, `sonda-network`, `sonda-lte-norte`, `sonda-lte-sul`)
+- Cada sub-bandeira mantém cartões, configurações, logos/fundo, mídia e
+  histórico próprios — igual às demais bandeiras (localStorage namespaced),
+  sem alteração na arquitetura de storage
+- `sonda` continua sendo a chave da D. Center — nenhuma perda de dados de
+  quem já usava o ambiente SONDA (só o rótulo mudou, de "SONDA" para
+  "SONDA D. CENTER")
+- Novo `BRAND_TEMPLATE_OVERRIDES`: as 4 sub-bandeiras novas herdam o ambiente
+  inicial (logo, layout, textos) de `sonda`, não do template genérico da Vale
+  — o baseline de primeira abertura fica mais próximo do que o time Sonda já
+  usa, em vez de partir em branco
+- Importante para a Apresentação (espelho ao vivo): cada ramo da Sonda agora
+  aparece como ambiente distinto na lista de cartões, o que a apresentação
+  multi-time depende para separar D0/D-1/KPIs por equipe
+- 37/37 verificações de `tests/smoke.mjs` + validação manual (jsdom) de troca
+  de bandeira e isolamento de storage entre `sonda` e `sonda-network`
+
 ## `2026.08.16-v56-code-audit`
 
 - Revisão completa do código (`index.html`, `sw.js`): sem `eval`/`new Function`,

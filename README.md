@@ -4,7 +4,7 @@ Nome oficial do projeto: **VPS-FMDS-Editor**.
 
 Aplicativo web (PWA) para editar e exportar a prancha operacional VPS/FMDS em formato 16:9, com ambientes por equipe (bandeira), painel administrativo, cartões e Espaço Apresentação em **espelho ao vivo**.
 
-**Build atual:** `2026.08.16-v56-code-audit`
+**Build atual:** `2026.08.16-v57-sonda-sub-brands`
 
 ## Links oficiais
 
@@ -28,7 +28,9 @@ Aplicativo web (PWA) para editar e exportar a prancha operacional VPS/FMDS em fo
 
 Em **Espaço Corporativo**, cada bandeira abre um ambiente isolado:
 
-VPS · VALE · SONDA · SETFANINI · ALDAK · ENGEFAME · MINAS LASER
+VPS · VALE · SONDA D. CENTER · SONDA CABLING · SONDA NETWORK · SONDA LTE S. NORTE · SONDA LTE S. SUL · SETFANINI · ALDAK · ENGEFAME · MINAS LASER
+
+> A SONDA tem ramificações de contrato/função e por isso abre em 5 sub-bandeiras isoladas (D. Center, Cabling, Network, LTE Norte, LTE Sul). Elas herdam o ambiente inicial (logo, layout, textos) da bandeira `sonda` (D. Center) em vez do template genérico — ver `BRAND_TEMPLATE_OVERRIDES` em `index.html`.
 
 Cada ambiente tem cartões, configurações, logos/fundo, mídia e histórico próprios (localStorage namespaced). O indicador **Ambiente: …** na barra mostra a equipe ativa.
 
