@@ -69,10 +69,14 @@ ok "Método de transferência: $TRANSFER"
 # O ssh RECUSA chave com permissão frouxa, e /mnt/c expõe tudo como 777 — por isso
 # copiamos para o home do Linux com 600 antes de usar.
 find_ssh_key() {
+  # $USER não existe no Git Bash (MSYS2) — só no WSL/Linux. Sem isso, "set -u"
+  # derruba o script com "USER: unbound variable" antes mesmo de olhar o SSH_KEY
+  # explícito passado pelo chamador.
+  local win_user="${USER:-${USERNAME:-}}"
   local candidates=(
     "$SSH_KEY"
     "$HOME/.ssh/id_ed25519" "$HOME/.ssh/id_rsa"
-    "/mnt/c/Users/$USER/.ssh/id_ed25519" "/mnt/c/Users/$USER/.ssh/id_rsa"
+    "/mnt/c/Users/$win_user/.ssh/id_ed25519" "/mnt/c/Users/$win_user/.ssh/id_rsa"
   )
   # Descobre o usuário do Windows quando rodando sob WSL
   if [[ -d /mnt/c/Users ]]; then
