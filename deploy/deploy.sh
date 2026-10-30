@@ -16,7 +16,11 @@ set -Eeuo pipefail
 #   nginx (host, não Docker) → /etc/nginx/sites-available/vps-fmds-editor.techartsolucoes.com.br
 #   root                     → /var/www/vps-fmds-editor.techartsolucoes.com.br/html
 SSH_HOST="${SSH_HOST:-root@187.127.28.74}"
-SSH_KEY="${SSH_KEY:-$HOME/.ssh/id_ed25519}"
+# techart_vps: chave que autentica neste Hostinger; id_ed25519 fica como fallback.
+SSH_KEY="${SSH_KEY:-$HOME/.ssh/techart_vps}"
+if [[ ! -f "$SSH_KEY" && -f "$HOME/.ssh/id_ed25519" ]]; then
+  SSH_KEY="$HOME/.ssh/id_ed25519"
+fi
 REMOTE_ROOT="${REMOTE_ROOT:-/var/www/vps-fmds-editor.techartsolucoes.com.br/html}"
 REMOTE_BACKUPS="${REMOTE_BACKUPS:-/var/backups/vps-fmds-editor}"
 DOMAIN="${DOMAIN:-vps-fmds-editor.techartsolucoes.com.br}"
