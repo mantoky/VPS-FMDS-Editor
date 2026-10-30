@@ -36,17 +36,11 @@
       --meta-size: 17px;
       --panel-title-size: 18px;
       --body-size: 15px;
-      --small-body-size: 15px;
       --footer-size: 22px;
-      --panel-large-h: 330px;
-      --panel-small-h: 170px;
-      --panel-large-auto-h: 330px;
-      --panel-small-auto-h: 170px;
       --panel-head-h: 42px;
       --footer-h: 52px;
       --panel-radius: 10px;
       --grid-columns: 1fr 1fr;
-      --grid-row-gap: 14px;
       --grid-column-gap: 18px;
       --top-pad-y: 17px;
       --title-box-h: 40px;
@@ -1244,30 +1238,6 @@
       border: 1px solid rgba(8, 45, 40, .18);
     }
 
-    /* Host off-screen: captura estável sem scroll/scale/sombra do editor */
-    #export-capture-host {
-      position: fixed;
-      left: -12000px;
-      top: 0;
-      width: 1280px;
-      height: 720px;
-      overflow: hidden;
-      z-index: -1;
-      pointer-events: none;
-      background: #f8faf6;
-    }
-
-    #export-capture-host .sheet {
-      width: 1280px !important;
-      height: 720px !important;
-      aspect-ratio: auto !important;
-      border: 0 !important;
-      transform: none !important;
-      margin: 0 !important;
-      box-shadow: none !important;
-      filter: none !important;
-    }
-
     .sheet-bg {
       position: absolute;
       inset: 0;
@@ -1446,13 +1416,29 @@
       bottom: calc(var(--footer-h) + var(--content-bottom-gap));
       display: grid;
       grid-template-columns: var(--grid-columns);
-      grid-template-rows: var(--panel-large-auto-h) var(--panel-small-auto-h);
-      gap: var(--grid-row-gap) var(--grid-column-gap);
+      /* Uma só faixa: as 2 caixas superiores ocupam também o espaço das inferiores */
+      grid-template-rows: minmax(0, 1fr);
+      column-gap: var(--grid-column-gap);
       padding: 0;
-      align-content: start;
+      align-content: stretch;
       overflow: hidden;
-      max-height: calc(100% - var(--content-top) - var(--footer-h) - var(--content-bottom-gap));
       box-sizing: border-box;
+    }
+
+    /* Produto: só PCM + Atenção; Pedidos/Extras saem do layout */
+    .grid [data-panel="execution"] {
+      grid-column: 1;
+      grid-row: 1;
+    }
+
+    .grid [data-panel="attention"] {
+      grid-column: 2;
+      grid-row: 1;
+    }
+
+    .grid [data-panel="helpLeft"],
+    .grid [data-panel="helpRight"] {
+      display: none !important;
     }
 
     .panel {
@@ -1463,14 +1449,6 @@
       background: var(--soft);
       overflow: hidden;
       backdrop-filter: blur(2px);
-    }
-
-    .panel.large {
-      height: 100%;
-    }
-
-    .panel.small {
-      height: 100%;
     }
 
     .panel.is-hidden {
@@ -1507,18 +1485,22 @@
       color: #06110f;
       font-size: clamp(14px, 1.7vw, var(--body-size));
       font-weight: 700;
-      line-height: 1.08;
+      line-height: 1.2;
       overflow: hidden;
+    }
+
+    /* Mesma fonte/peso/entrelinha nas caixas — ignora estilos colados. */
+    .panel-body .editable,
+    .panel-body .editable * {
+      font-family: inherit;
+      font-size: inherit !important;
+      line-height: inherit !important;
+      letter-spacing: normal;
+      text-transform: none;
     }
 
     .panel-body .editable {
       min-height: 100%;
-    }
-
-    .panel.small .panel-body {
-      padding-top: 13px;
-      font-size: clamp(13px, 1.6vw, var(--small-body-size));
-      line-height: 1.2;
     }
 
     .panel-body ul {
@@ -2002,8 +1984,7 @@
       .presentation-overlay,
       .confirm-modal,
       .update-modal,
-      .live-room-modal,
-      #export-capture-host {
+      .live-room-modal {
         display: none !important;
       }
 
@@ -2304,6 +2285,8 @@
         <button type="button" class="model-close" id="modelsCloseBtn" title="Fechar cartões VPS">×</button>
       </div>
       <div class="model-list">
+        <button type="button" data-model-id="d3">FMDS D-3</button>
+        <button type="button" data-model-id="d2">FMDS D-2</button>
         <button type="button" data-model-id="d1">FMDS D-1</button>
         <button type="button" data-model-id="d0">FMDS D0</button>
         <button type="button" data-model-id="painel">FMDS PAINEL</button>
@@ -2329,11 +2312,8 @@
       <label class="admin-field">Títulos das caixas
         <input type="range" min="14" max="34" step="1" data-setting="panelTitleSize" data-unit="px">
       </label>
-      <label class="admin-field">Textos das caixas maiores
+      <label class="admin-field">Textos das caixas
         <input type="range" min="12" max="30" step="1" data-setting="bodySize" data-unit="px">
-      </label>
-      <label class="admin-field">Textos das caixas menores
-        <input type="range" min="12" max="28" step="1" data-setting="smallBodySize" data-unit="px">
       </label>
       <label class="admin-field">Texto do rodapé
         <input type="range" min="14" max="34" step="1" data-setting="footerSize" data-unit="px">
@@ -2370,12 +2350,6 @@
 
     <section class="admin-section is-collapsed">
       <h3>Caixas e rodapé</h3>
-      <label class="admin-field">Altura das caixas superiores
-        <input type="range" min="190" max="330" step="1" data-setting="panelLargeHeight" data-unit="px">
-      </label>
-      <label class="admin-field">Altura das caixas inferiores
-        <input type="range" min="78" max="170" step="1" data-setting="panelSmallHeight" data-unit="px">
-      </label>
       <label class="admin-field">Altura dos cabeçalhos das caixas
         <input type="range" min="42" max="78" step="1" data-setting="panelHeadHeight" data-unit="px">
       </label>
@@ -2391,9 +2365,6 @@
       <label class="admin-field">Espaço horizontal entre caixas
         <input type="range" min="8" max="54" step="1" data-setting="columnGap" data-unit="px">
       </label>
-      <label class="admin-field">Espaço vertical entre caixas
-        <input type="range" min="8" max="44" step="1" data-setting="rowGap" data-unit="px">
-      </label>
       <label class="admin-field">Distância entre logos do rodapé
         <input type="range" min="4" max="36" step="1" data-setting="footerLogoGap" data-unit="px">
       </label>
@@ -2401,25 +2372,18 @@
 
     <section class="admin-section is-collapsed">
       <h3>Ocultar caixas</h3>
+      <p class="admin-note">Foco FMDS: Programação PCM + Pontos de Atenção / Pedidos de ajuda. D-1/D-2/D-3 recebem consolidado, mas só entram na pauta se marcados Exibir.</p>
       <label class="admin-field check">
         <input type="checkbox" data-panel-toggle="execution">
-        Ocultar Execução do Dia
+        Ocultar Programação PCM
       </label>
       <label class="admin-field check">
         <input type="checkbox" data-panel-toggle="attention">
-        Ocultar Ponto de Atenção
-      </label>
-      <label class="admin-field check">
-        <input type="checkbox" data-panel-toggle="helpLeft">
-        Ocultar Pedido de ajuda esquerdo
-      </label>
-      <label class="admin-field check">
-        <input type="checkbox" data-panel-toggle="helpRight">
-        Ocultar Pedido de ajuda direito
+        Ocultar Pontos de Atenção / Pedidos de ajuda
       </label>
       <div class="admin-actions">
-        <button type="button" id="hideAllPanelsBtn">Ocultar todas</button>
-        <button type="button" id="showAllPanelsBtn">Mostrar todas</button>
+        <button type="button" id="hideAllPanelsBtn">Ocultar as duas</button>
+        <button type="button" id="showAllPanelsBtn">Mostrar as duas</button>
       </div>
     </section>
 
@@ -2444,17 +2408,11 @@
 
     <section class="admin-section is-collapsed">
       <h3>Títulos das caixas</h3>
-      <label class="admin-field">Caixa superior esquerda
+      <label class="admin-field">Programação PCM
         <input type="text" data-title-target="executionTitle">
       </label>
-      <label class="admin-field">Caixa superior direita
+      <label class="admin-field">Pontos de Atenção / Pedidos de ajuda
         <input type="text" data-title-target="attentionTitle">
-      </label>
-      <label class="admin-field">Caixa inferior esquerda
-        <input type="text" data-title-target="helpLeftTitle">
-      </label>
-      <label class="admin-field">Caixa inferior direita
-        <input type="text" data-title-target="helpRightTitle">
       </label>
     </section>
 
@@ -2499,21 +2457,13 @@
 
     <section class="admin-section is-collapsed">
       <h3>Banco de ícones</h3>
-      <label class="admin-field">Execução
+      <label class="admin-field">Programação PCM
         <select data-icon-select="executionIcon"></select>
         <input type="file" data-icon-file="executionIcon" accept="image/*">
       </label>
-      <label class="admin-field">Ponto de atenção
+      <label class="admin-field">Pontos de atenção
         <select data-icon-select="attentionIcon"></select>
         <input type="file" data-icon-file="attentionIcon" accept="image/*">
-      </label>
-      <label class="admin-field">Pedido de ajuda esquerdo
-        <select data-icon-select="helpLeftIcon"></select>
-        <input type="file" data-icon-file="helpLeftIcon" accept="image/*">
-      </label>
-      <label class="admin-field">Pedido de ajuda direito
-        <select data-icon-select="helpRightIcon"></select>
-        <input type="file" data-icon-file="helpRightIcon" accept="image/*">
       </label>
       <label class="admin-field">Calendário
         <select data-icon-select="calendarIcon"></select>
@@ -2695,10 +2645,10 @@
         </div>
 
         <div class="grid">
-          <article class="panel large is-hidden" data-panel="execution">
+          <article class="panel" data-panel="execution">
             <div class="panel-head">
               <img class="layout-icon" data-icon-slot="executionIcon" alt="">
-              <div class="panel-title editable" contenteditable="true" data-key="executionTitle">Execução do Dia</div>
+              <div class="panel-title editable" contenteditable="true" data-key="executionTitle">Programação PCM</div>
             </div>
             <div class="panel-body">
               <ul class="editable" contenteditable="true" data-key="executionList">
@@ -2710,10 +2660,10 @@
             </div>
           </article>
 
-          <article class="panel large is-hidden" data-panel="attention">
+          <article class="panel" data-panel="attention">
             <div class="panel-head">
               <img class="layout-icon" data-icon-slot="attentionIcon" alt="">
-              <div class="panel-title editable" contenteditable="true" data-key="attentionTitle">Ponto de Atenção</div>
+              <div class="panel-title editable" contenteditable="true" data-key="attentionTitle">Pontos de Atenção / Pedidos de ajuda</div>
             </div>
             <div class="panel-body">
               <div class="editable" contenteditable="true" data-key="attentionBody">
@@ -2726,10 +2676,10 @@
             </div>
           </article>
 
-          <article class="panel small is-hidden" data-panel="helpLeft">
+          <article class="panel is-hidden" data-panel="helpLeft" aria-hidden="true">
             <div class="panel-head">
               <img class="layout-icon" data-icon-slot="helpLeftIcon" alt="">
-              <div class="panel-title editable" contenteditable="true" data-key="helpLeftTitle">Pedido (s) de ajuda</div>
+              <div class="panel-title editable" contenteditable="true" data-key="helpLeftTitle">Pedidos de ajuda</div>
             </div>
             <div class="panel-body">
               <ul class="editable" contenteditable="true" data-key="helpLeftList">
@@ -2738,10 +2688,10 @@
             </div>
           </article>
 
-          <article class="panel small is-hidden" data-panel="helpRight">
+          <article class="panel is-hidden" data-panel="helpRight" aria-hidden="true">
             <div class="panel-head">
               <img class="layout-icon" data-icon-slot="helpRightIcon" alt="">
-              <div class="panel-title editable" contenteditable="true" data-key="helpRightTitle">Pedido (s) de ajuda</div>
+              <div class="panel-title editable" contenteditable="true" data-key="helpRightTitle">Atividades extras</div>
             </div>
             <div class="panel-body">
               <ul class="editable" contenteditable="true" data-key="helpRightList">
@@ -2811,7 +2761,7 @@
      */
     const EXPORT_DECK_FORMAT = "png";
     const EXPORT_DECK_JPEG_QUALITY = 0.95;
-    const APP_VERSION = "2026.08.16-v57-sonda-sub-brands";
+    const APP_VERSION = "2026.10.29-v64-report-lte-two-box";
     /** Congela layout/abas/guias do source como padrão visual desta release. Semana/data permanecem automáticas. */
     const BASELINE_FLAG = "vps-operacional-baseline-version";
     /** Bandeira canônica do modelo padrão compartilhado (Ambiente VALE). */
@@ -2880,6 +2830,10 @@
         defaults: {
           title: "VPS Operacional — Vale Carajás-PA",
           badge: "D-1",
+          executionTitle: "Programação PCM: D-1",
+          attentionTitle: "Pontos de Atenção / Pedidos de ajuda",
+          helpLeftTitle: "Pedidos de ajuda",
+          helpRightTitle: "Atividades extras",
           footerText: "<strong>VPS</strong> <span class=\"sep\">|</span> Vale Carajás-PA <span class=\"sep\">|</span> Sonda LTE"
         }
       },
@@ -2889,8 +2843,10 @@
         defaults: {
           title: "VPS Operacional — FMDS D0",
           badge: "D0",
-          executionTitle: "Execução D0",
-          attentionTitle: "Ponto de Atenção D0",
+          executionTitle: "Programação PCM: D0",
+          attentionTitle: "Pontos de Atenção / Pedidos de ajuda",
+          helpLeftTitle: "Pedidos de ajuda",
+          helpRightTitle: "Atividades extras",
           footerText: "<strong>VPS</strong> <span class=\"sep\">|</span> FMDS D0 <span class=\"sep\">|</span> Sonda LTE"
         }
       },
@@ -2905,6 +2861,33 @@
           helpLeftTitle: "Próximas Ações",
           helpRightTitle: "Apoios Necessários",
           footerText: "<strong>VPS</strong> <span class=\"sep\">|</span> FMDS Painel Geral <span class=\"sep\">|</span> Sonda LTE"
+        }
+      },
+      /* v59 · fim de semana: um cartão por dia (sexta = D-3, sábado = D-2). */
+      {
+        id: "d3",
+        name: "FMDS D-3",
+        defaults: {
+          title: "VPS Operacional — Vale Carajás-PA",
+          badge: "D-3",
+          executionTitle: "Programação PCM: D-3",
+          attentionTitle: "Pontos de Atenção / Pedidos de ajuda",
+          helpLeftTitle: "Pedidos de ajuda",
+          helpRightTitle: "Atividades extras",
+          footerText: "<strong>VPS</strong> <span class=\"sep\">|</span> Vale Carajás-PA <span class=\"sep\">|</span> Sonda LTE"
+        }
+      },
+      {
+        id: "d2",
+        name: "FMDS D-2",
+        defaults: {
+          title: "VPS Operacional — Vale Carajás-PA",
+          badge: "D-2",
+          executionTitle: "Programação PCM: D-2",
+          attentionTitle: "Pontos de Atenção / Pedidos de ajuda",
+          helpLeftTitle: "Pedidos de ajuda",
+          helpRightTitle: "Atividades extras",
+          footerText: "<strong>VPS</strong> <span class=\"sep\">|</span> Vale Carajás-PA <span class=\"sep\">|</span> Sonda LTE"
         }
       },
       {
@@ -3006,16 +2989,12 @@
       metaSize: 17,
       panelTitleSize: 18,
       bodySize: 15,
-      smallBodySize: 15,
       footerSize: 22,
-      panelLargeHeight: 330,
-      panelSmallHeight: 170,
       panelHeadHeight: 42,
       footerHeight: 52,
       panelRadius: 10,
       leftColumnWidth: 50,
       columnGap: 18,
-      rowGap: 14,
       topPadding: 17,
       titleBoxHeight: 40,
       metaBoxHeight: 21,
@@ -3037,9 +3016,10 @@
       freeMediaFit: "contain",
       freeMediaOpacity: 1,
       reportMedia: [],
+      /* Só 2 caixas: PCM + Atenção (superiores) em altura plena. Inferiores fora do layout. */
       hiddenPanels: {
-        "execution": true,
-        "attention": true,
+        "execution": false,
+        "attention": false,
         "helpLeft": true,
         "helpRight": true
       },
@@ -3049,7 +3029,7 @@
           "custom": ""
         },
         "attentionIcon": {
-          "preset": "clipboard",
+          "preset": "alert",
           "custom": ""
         },
         "helpLeftIcon": {
@@ -3057,7 +3037,7 @@
           "custom": ""
         },
         "helpRightIcon": {
-          "preset": "alert",
+          "preset": "clipboard",
           "custom": ""
         },
         "calendarIcon": {
@@ -3079,15 +3059,11 @@
       metaSize: ["--meta-size", "px"],
       panelTitleSize: ["--panel-title-size", "px"],
       bodySize: ["--body-size", "px"],
-      smallBodySize: ["--small-body-size", "px"],
       footerSize: ["--footer-size", "px"],
-      panelLargeHeight: ["--panel-large-h", "px"],
-      panelSmallHeight: ["--panel-small-h", "px"],
       panelHeadHeight: ["--panel-head-h", "px"],
       footerHeight: ["--footer-h", "px"],
       panelRadius: ["--panel-radius", "px"],
       columnGap: ["--grid-column-gap", "px"],
-      rowGap: ["--grid-row-gap", "px"],
       topPadding: ["--top-pad-y", "px"],
       titleBoxHeight: ["--title-box-h", "px"],
       metaBoxHeight: ["--meta-box-h", "px"],
@@ -4166,7 +4142,7 @@
     }
 
     function mergeAdminDefaults(saved = {}) {
-      return {
+      const merged = {
         ...adminDefaults,
         ...saved,
         hiddenPanels: { ...adminDefaults.hiddenPanels, ...(saved.hiddenPanels || {}) },
@@ -4176,6 +4152,15 @@
           { ...value, ...((saved.icons || {})[slot] || {}) }
         ]))
       };
+      // Layout de produto: Pedidos/Extras fora; PCM + Atenção em altura plena
+      merged.hiddenPanels.helpLeft = true;
+      merged.hiddenPanels.helpRight = true;
+      // Descarta settings mortos do layout de 4 caixas
+      delete merged.panelLargeHeight;
+      delete merged.panelSmallHeight;
+      delete merged.smallBodySize;
+      delete merged.rowGap;
+      return merged;
     }
 
     function readJsonStorage(key) {
@@ -4255,7 +4240,17 @@
       return freed;
     }
 
-    /** Apresentação: D-1/D0 forçam painéis visíveis; Painel/KPI mantêm guias ocultas (arte = fotos). */
+    /** Visibilidade canônica: só as 2 caixas superiores (PCM + Atenção), em altura plena. */
+    function twoBoxTopHiddenPanels() {
+      return {
+        execution: false,
+        attention: false,
+        helpLeft: true,
+        helpRight: true
+      };
+    }
+
+    /** Apresentação: D-1/D0 com 2 caixas superiores; Painel/KPI ocultam guias (arte = fotos). */
     function adminStateForPresentation(state = adminState, modelId = activeModelId) {
       const stored = adminStateForStorage(state);
       if (isReportMediaModel(modelId)) {
@@ -4268,9 +4263,7 @@
       }
       return {
         ...stored,
-        hiddenPanels: Object.fromEntries(
-          Object.keys(adminDefaults.hiddenPanels).map((panel) => [panel, false])
-        )
+        hiddenPanels: { ...twoBoxTopHiddenPanels() }
       };
     }
 
@@ -4732,36 +4725,6 @@
       });
     }
 
-    function panelContentHeight(panel) {
-      const head = panel.querySelector(".panel-head");
-      const body = panel.querySelector(".panel-body");
-      const headHeight = head ? Math.ceil(head.scrollHeight) : 0;
-      const bodyHeight = body ? Math.ceil(body.scrollHeight) : 0;
-      return headHeight + bodyHeight + 2;
-    }
-
-    function resizePanelsToContent() {
-      const grid = document.querySelector(".grid");
-      if (!grid) return;
-      const visibleTopPanels = [...document.querySelectorAll('[data-panel="execution"], [data-panel="attention"]')]
-        .filter((panel) => !panel.classList.contains("is-hidden"));
-      const visibleBottomPanels = [...document.querySelectorAll('[data-panel="helpLeft"], [data-panel="helpRight"]')]
-        .filter((panel) => !panel.classList.contains("is-hidden"));
-      const rowGap = Number(adminState.rowGap) || 0;
-      const available = Math.max(0, grid.clientHeight - rowGap);
-      let large = Math.max(adminState.panelLargeHeight, ...visibleTopPanels.map(panelContentHeight), 0);
-      let small = Math.max(adminState.panelSmallHeight, ...visibleBottomPanels.map(panelContentHeight), 0);
-
-      if (large + small > available && available > 0) {
-        const largeShare = visibleBottomPanels.length ? 0.68 : 1;
-        large = Math.min(large, Math.round(available * largeShare));
-        small = visibleTopPanels.length ? Math.min(small, available - large) : available;
-      }
-
-      document.documentElement.style.setProperty("--panel-large-auto-h", `${Math.max(0, Math.round(large))}px`);
-      document.documentElement.style.setProperty("--panel-small-auto-h", `${Math.max(0, Math.round(small))}px`);
-    }
-
     function fitSheetToEditor() {
       const mainEl = document.querySelector("main");
       const stage = document.querySelector(".sheet-stage");
@@ -4791,7 +4754,6 @@
     function schedulePanelResize() {
       window.cancelAnimationFrame(schedulePanelResize.frame);
       schedulePanelResize.frame = window.requestAnimationFrame(() => {
-        resizePanelsToContent();
         fitSheetToEditor();
       });
     }
@@ -7438,17 +7400,18 @@
     });
 
     document.getElementById("hideAllPanelsBtn").addEventListener("click", () => {
-      Object.keys(adminState.hiddenPanels).forEach((panel) => {
-        adminState.hiddenPanels[panel] = true;
-      });
-      saveAdminState("Todas as caixas foram ocultadas.");
+      adminState.hiddenPanels = {
+        execution: true,
+        attention: true,
+        helpLeft: true,
+        helpRight: true
+      };
+      saveAdminState("As duas caixas foram ocultadas.");
     });
 
     document.getElementById("showAllPanelsBtn").addEventListener("click", () => {
-      Object.keys(adminState.hiddenPanels).forEach((panel) => {
-        adminState.hiddenPanels[panel] = false;
-      });
-      saveAdminState("Todas as caixas foram exibidas.");
+      adminState.hiddenPanels = { ...twoBoxTopHiddenPanels() };
+      saveAdminState("As duas caixas superiores foram exibidas.");
     });
 
     document.getElementById("resetIconsBtn").addEventListener("click", () => {
@@ -7565,17 +7528,188 @@
     updateLiveRoomStatus();
     window.addEventListener("resize", schedulePanelResize);
     if ("ResizeObserver" in window) {
-      const panelObserver = new ResizeObserver(schedulePanelResize);
-      document.querySelectorAll(".panel-head, .panel-body, .grid").forEach((el) => panelObserver.observe(el));
       const mainEl = document.querySelector("main");
-      if (mainEl) panelObserver.observe(mainEl);
+      if (mainEl) new ResizeObserver(schedulePanelResize).observe(mainEl);
     }
     schedulePanelResize();
+    /* ══ Report LTE → FMDS · consolidado do período ═══════════════════════════
+       Layout VPS (2 caixas): Programação PCM + Pontos de Atenção / Pedidos de
+       ajuda. O pacote ainda pode trazer helpLeft/helpRight (contrato LTE); a
+       ajuda visível é fundida na caixa de atenção. D-1/D-2/D-3 recebem texto,
+       mas só D0 entra na pauta da apresentação por padrão. */
+    const REPORT_LTE_KIND = "report-lte-fmds-card";
+    const REPORT_LTE_KEYS = [
+      "executionTitle", "executionList", "attentionTitle", "attentionBody",
+      "helpLeftTitle", "helpLeftList", "helpRightTitle", "helpRightList"
+    ];
+    const REPORT_LTE_FOCUS_TITLE = "Pontos de Atenção / Pedidos de ajuda";
+
+    function reportLteHtmlHasContent(html) {
+      const probe = document.createElement("div");
+      probe.innerHTML = sanitizeFieldHtml(String(html || ""));
+      if ([...probe.querySelectorAll("li")].some((li) => li.textContent.trim())) return true;
+      return Boolean(probe.textContent.replace(/\s+/g, " ").trim());
+    }
+
+    function reportLteExtractListItems(html) {
+      const probe = document.createElement("div");
+      probe.innerHTML = sanitizeFieldHtml(String(html || ""));
+      const items = [...probe.querySelectorAll("li")]
+        .map((li) => li.innerHTML.trim())
+        .filter(Boolean);
+      if (items.length) return items;
+      const plain = probe.textContent.replace(/\s+/g, " ").trim();
+      return plain ? [plain] : [];
+    }
+
+    /** Funde Pedidos de ajuda (helpLeft) na caixa visível de Atenção. */
+    function foldReportLteHelpIntoAttention(content = {}) {
+      const helpItems = reportLteExtractListItems(content.helpLeftList);
+      if (!helpItems.length) return false;
+      const attentionField = document.querySelector('[data-key="attentionBody"]');
+      if (!attentionField) return false;
+      const hasAttention = reportLteHtmlHasContent(content.attentionBody);
+      const parts = [];
+      if (hasAttention) {
+        parts.push(sanitizeFieldHtml(String(content.attentionBody).slice(0, 20000)));
+        const helpTitle = String(content.helpLeftTitle || "Pedidos de ajuda")
+          .replace(/<[^>]*>/g, "")
+          .trim()
+          .slice(0, 80) || "Pedidos de ajuda";
+        parts.push(`<p><strong>${helpTitle}</strong></p>`);
+      }
+      parts.push(`<ul>${helpItems.map((item) => `<li>${item}</li>`).join("")}</ul>`);
+      setFieldHtml(attentionField, parts.join("").slice(0, 20000));
+      const titleField = document.querySelector('[data-key="attentionTitle"]');
+      if (titleField) {
+        const current = titleField.textContent.replace(/\s+/g, " ").trim();
+        const incoming = String(content.attentionTitle || "").replace(/<[^>]*>/g, "").trim();
+        const keepIncoming = incoming && incoming !== "Pontos de Atenção" && incoming !== REPORT_LTE_FOCUS_TITLE;
+        if (!keepIncoming || !current || current === "Pontos de Atenção") {
+          setFieldHtml(titleField, REPORT_LTE_FOCUS_TITLE);
+        }
+      }
+      return true;
+    }
+
+    function readReportLteHandoff() {
+      const match = String(window.location.hash || "").match(/[#&]rlte=([A-Za-z0-9_-]+)/);
+      if (!match) return null;
+      if (match[1].length > 120000) throw new Error("pacote grande demais");
+      const b64 = match[1].replace(/-/g, "+").replace(/_/g, "/");
+      const bin = atob(b64 + "===".slice((b64.length + 3) % 4));
+      const bytes = Uint8Array.from(bin, (c) => c.charCodeAt(0));
+      const data = JSON.parse(new TextDecoder().decode(bytes));
+      if (data?.kind !== REPORT_LTE_KIND || ![1, 2].includes(data.version)) throw new Error("formato desconhecido");
+      if (!Object.prototype.hasOwnProperty.call(corporateBrands, data.brand)) throw new Error("ambiente inválido");
+      // v1 = um cartão (modelId + content); v2 = vários cartões (D-3…D0).
+      const cards = data.version === 1 ? [{ modelId: data.modelId, content: data.content }] : (Array.isArray(data.cards) ? data.cards : []);
+      if (!cards.length || cards.length > 4) throw new Error("pacote sem cartões");
+      cards.forEach((card) => {
+        if (!slideModels.some((model) => model.id === card?.modelId)) throw new Error("cartão inválido");
+        if (!card.content || typeof card.content !== "object") throw new Error("pacote sem conteúdo");
+      });
+      return { ...data, cards };
+    }
+
+    function clearReportLteHash() {
+      if (!/[#&]rlte=/.test(window.location.hash || "")) return;
+      window.history.replaceState(null, "", window.location.pathname + window.location.search);
+    }
+
+    async function bootReportLteHandoff() {
+      let data = null;
+      try {
+        data = readReportLteHandoff();
+      } catch (error) {
+        console.warn("Pacote do Report LTE inválido.", error);
+        clearReportLteHash();
+        setStatus(`Link do Report LTE inválido (${error.message}).`);
+        return;
+      }
+      if (!data) return;
+      const team = String(data.team?.label || "Report LTE").slice(0, 40);
+      const period = String(data.period?.label || "").slice(0, 60);
+      const brandLabel = corporateBrands[data.brand];
+      const modelName = data.cards.map((card) => slideModels.find((model) => model.id === card.modelId)?.name || card.modelId).join(" e ");
+      const ok = await askConfirmation({
+        title: "Consolidado do Report LTE",
+        message: `Aplicar o consolidado de ${team}${period ? ` · ${period}` : ""} no${data.cards.length > 1 ? "s cartões" : " cartão"} ${modelName} do ambiente ${brandLabel}? Programação PCM e Pontos de Atenção / Pedidos de ajuda serão substituídos nas 2 caixas. Dias anteriores (D-1/D-2/D-3) ficam no cartão, mas só entram na pauta se você marcar Exibir. Data, semana, títulos do cabeçalho, logos e fotos ficam como estão.`,
+        acceptLabel: "Aplicar consolidado",
+        rejectLabel: "Cancelar"
+      });
+      clearReportLteHash();
+      if (!ok) {
+        setStatus("Consolidado do Report LTE não aplicado.");
+        return;
+      }
+      if (data.brand !== activeCorporateBrand) selectCorporateBrand(data.brand);
+      let applied = 0;
+      // Termina no D0 (foco do dia); se o pacote só trouxer dias anteriores, fica no último aplicado.
+      const focusCard = data.cards.find((card) => card.modelId === "d0") || data.cards[data.cards.length - 1];
+      const applyOrder = [
+        ...data.cards.filter((card) => card.modelId !== focusCard.modelId),
+        focusCard
+      ];
+      applyOrder.forEach((card) => {
+        if (card.modelId !== activeModelId) switchModel(card.modelId);
+        REPORT_LTE_KEYS.forEach((key) => {
+          const value = card.content[key];
+          if (typeof value !== "string") return;
+          const field = document.querySelector(`[data-key="${key}"]`);
+          if (!field) return;
+          setFieldHtml(field, value.slice(0, 20000));
+          applied += 1;
+        });
+        if (foldReportLteHelpIntoAttention(card.content)) applied += 1;
+        if (!isReportMediaModel(card.modelId)) {
+          adminState.hiddenPanels = { ...twoBoxTopHiddenPanels() };
+          const icons = adminState.icons || {};
+          if (icons.attentionIcon && !icons.attentionIcon.custom && icons.attentionIcon.preset === "clipboard") icons.attentionIcon.preset = "alert";
+          if (icons.helpRightIcon && !icons.helpRightIcon.custom && icons.helpRightIcon.preset === "alert") icons.helpRightIcon.preset = "clipboard";
+          saveAdminState("Layout 2 caixas alinhado ao consolidado.");
+        }
+        saveState();
+      });
+      reportLteArrangeDeck(data);
+      setStatus(`Consolidado do Report LTE aplicado em ${brandLabel} · ${modelName} (${applied} campos) — ${team}${period ? ` · ${period}` : ""}.`);
+    }
+
+    /* Apresentação: ordem D-3 → D-2 → D-1 → D0; só D0 entra com Exibir ligado.
+       Dias anteriores recebem consolidado no cartão, mas ficam fora da pauta
+       até alguém marcar Exibir. Dias sem relatório no pacote ficam ocultos. */
+    function reportLteArrangeDeck(data) {
+      try {
+        const seq = ["d3", "d2", "d1", "d0"];
+        const sent = data.cards.map((card) => card.modelId);
+        const hide = (Array.isArray(data.hide) ? data.hide : []).filter((id) => seq.includes(id) && !sent.includes(id));
+        const mirror = loadPresentationMirrorState();
+        const ids = seq.filter((id) => sent.includes(id)).map((id) => presentationCardId(data.brand, id));
+        const first = Math.min(...ids.map((id) => mirror.order.indexOf(id)).filter((i) => i >= 0));
+        const rest = mirror.order.filter((id) => !ids.includes(id));
+        const at = Number.isFinite(first) ? Math.min(first, rest.length) : rest.length;
+        mirror.order = [...rest.slice(0, at), ...ids, ...rest.slice(at)];
+        sent.forEach((modelId) => {
+          const id = presentationCardId(data.brand, modelId);
+          mirror.visible[id] = modelId === "d0";
+        });
+        hide.forEach((m) => { mirror.visible[presentationCardId(data.brand, m)] = false; });
+        savePresentationMirrorState(mirror);
+        if (typeof renderPresentationDeckList === "function") renderPresentationDeckList();
+        if (typeof syncPresentationVisibilityButton === "function") syncPresentationVisibilityButton();
+      } catch (error) {
+        console.warn("Ordem da apresentação não ajustada.", error);
+      }
+    }
+
+    window.addEventListener("hashchange", () => { bootReportLteHandoff(); });
+
     window.addEventListener("load", () => {
       bindPresentationHudControls();
       fitSheetToEditor();
       registerServiceWorker();
       bootLiveMultisiteFromUrl();
+      bootReportLteHandoff();
     });
     window.vpsOperacional = {
       version: APP_VERSION,

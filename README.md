@@ -4,7 +4,7 @@ Nome oficial do projeto: **VPS-FMDS-Editor**.
 
 Aplicativo web (PWA) para editar e exportar a prancha operacional VPS/FMDS em formato 16:9, com ambientes por equipe (bandeira), painel administrativo, cartões e Espaço Apresentação em **espelho ao vivo**.
 
-**Build atual:** `2026.08.16-v57-sonda-sub-brands`
+**Build atual:** `2026.10.29-v64-report-lte-two-box`
 
 ## Links oficiais
 

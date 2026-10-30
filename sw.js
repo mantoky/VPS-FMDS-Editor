@@ -1,6 +1,6 @@
 // ATENÇÃO: manter em sincronia com APP_VERSION em index.html.
 // O checklist FMDS compara as duas e avisa quando divergem.
-const APP_VERSION = "2026.08.16-v57-sonda-sub-brands";
+const APP_VERSION = "2026.10.29-v64-report-lte-two-box";
 const CACHE_NAME = `vps-operacional-pwa-${APP_VERSION}`;
 // Recursos que devem preferir a rede (config que muda fora do release).
 const NETWORK_FIRST = /\/firebase-config\.js$/;
